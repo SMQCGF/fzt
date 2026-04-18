@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>纺织通 - 万人销售群</title>
+  <!-- 引入依赖 -->
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/postcss@4"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-primary: #2563eb;
+      --color-secondary: #f59e0b;
+      --color-dark: #0f172a;
+      --color-light: #f8fafc;
+      --font-inter: 'Inter', sans-serif;
+    }
+    @utility smooth-scroll {
+      scroll-behavior: smooth;
+    }
+    @utility text-shadow {
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    body {
+      font-family: var(--font-inter);
+      background-color: var(--color-dark);
+      color: var(--color-light);
+    }
+    /* 滚动条美化 */
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 6px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background-color: rgba(255,255,255,0.2);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- 顶部导航 -->
+  <header class="bg-[var(--color-dark)] border-b border-gray-700 sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <h1 class="text-2xl font-bold text-[var(--color-primary)]">纺织通</h1>
+        <nav class="hidden md:flex space-x-6 ml-8">
+          <a href="#" class="hover:text-[var(--color-primary)] transition-colors">首页</a>
+          <a href="#" class="hover:text-[var(--color-primary)] transition-colors">产品</a>
+          <a href="#" class="hover:text-[var(--color-primary)] transition-colors">供应商</a>
+          <a href="#" class="hover:text-[var(--color-primary)] transition-colors">我的订单</a>
+          <a href="#" class="hover:text-[var(--color-primary)] transition-colors">客服中心</a>
+        </nav>
+      </div>
+      <div class="flex items-center space-x-4">
+        <button id="adminBtn" class="hidden bg-[var(--color-primary)] hover:bg-blue-700 px-3 py-1 rounded text-sm">后台</button>
+        <a href="#" class="text-sm hover:text-[var(--color-primary)]">纺织商家</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 顶部横幅广告位 -->
+  <div class="bg-orange-500 text-white py-3 text-center font-bold">
+    【顶部横幅广告位】纺织工厂/面料/棉纱推广位 · 广告招商中
+  </div>
+
+  <!-- 主内容区 -->
+  <main class="flex-1 container mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <!-- 左侧：在线用户列表 -->
+    <aside class="bg-gray-800 rounded-lg p-4 h-[600px] overflow-y-auto scrollbar-thin">
+      <h2 class="text-lg font-semibold mb-4 flex items-center">
+        <i class="fas fa-users mr-2"></i>在线用户（可上下拉）
+      </h2>
+      <ul id="onlineUsers" class="space-y-2">
+        <!-- 动态加载用户 -->
+      </ul>
+    </aside>
+
+    <!-- 中间：聊天区域 -->
+    <section class="lg:col-span-2 bg-gray-800 rounded-lg p-4 h-[600px] flex flex-col">
+      <div id="chatMessages" class="flex-1 overflow-y-auto scrollbar-thin space-y-4 mb-4">
+        <!-- 系统消息 -->
+        <div class="flex items-start space-x-2">
+          <span class="text-xs bg-gray-700 px-2 py-1 rounded">系统</span>
+          <p class="text-sm">欢迎来到纺织通万人销售群！这里有棉纱、坯布、面料、工厂资源！
+        </div>
+      </div>
+      <!-- 喇叭输入框 -->
+      <div class="flex space-x-2 mb-2">
+        <input 
+          type="text" 
+          id="hornInput" 
+          placeholder="输入喇叭内容（消耗1金币）" 
+          class="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]"
+        />
+        <button id="sendHorn" class="bg-[var(--color-secondary)] hover:bg-amber-600 px-3 py-2 rounded text-sm font-medium">发送喇叭</button>
+      </div>
+      <!-- 消息输入框 -->
+      <div class="flex space-x-2">
+        <input 
+          type="text" 
+          id="messageInput" 
+          placeholder="输入消息..." 
+          class="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]"
+        />
+        <button id="sendMessage" class="bg-[var(--color-primary)] hover:bg-blue-700 px-3 py-2 rounded text-sm font-medium">发送</button>
+      </div>
+    </section>
+
+    <!-- 右侧：功能区 + 广告位 -->
+    <aside class="bg-gray-800 rounded-lg p-4 h-[600px] flex flex-col">
+      <!-- 每日签到 -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-2">每日签到</h3>
+        <p class="text-sm mb-2">连续签到：<span id="signDays">0</span>天
+        <button id="signBtn" class="w-full bg-[var(--color-secondary)] hover:bg-amber-600 py-2 rounded font-medium">签到送1金币</button>
+      </div>
+
+      <!-- 我的金币 -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-2">我的金币：<span id="coinCount">0</span>
+        <div class="space-y-2">
+          <button id="hornBtn" class="w-full bg-[var(--color-primary)] hover:bg-blue-700 py-2 rounded">一元喇叭</button>
+          <button id="vipBtn" class="w-full bg-[var(--color-primary)] hover:bg-blue-700 py-2 rounded">开通VIP</button>
+          <button id="rechargeBtn" class="w-full bg-[var(--color-primary)] hover:bg-blue-700 py-2 rounded">充值</button>
+        </div>
+      </div>
+
+      <!-- 广告位招商 -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-2">广告位招商</h3>
+        <button id="adBuyBtn" class="w-full bg-[var(--color-primary)] hover:bg-blue-700 py-2 rounded">购买广告位</button>
+      </div>
+
+      <!-- 侧边小广告位 -->
+      <div class="mt-auto">
+        <div class="bg-blue-900/30 p-3 rounded text-sm text-center">
+          【侧边小广告位】纺织货源/设备/招聘推广
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- 底部广告（可选） -->
+  <footer class="bg-[var(--color-dark)] border-t border-gray-700 py-3 text-center text-sm">
+    © 2024 纺织通 - 万人销售群 | 广告合作：<span id="adminWechat">ZZ18962500118</span>（仅后台查看）
+  </footer>
+
+  <!-- 登录/注册模态框 -->
+  <div id="authModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+      <div class="flex border-b border-gray-700 mb-4">
+        <button id="loginTab" class="py-2 px-4 font-medium border-b-2 border-[var(--color-primary)]">手机登录</button>
+        <button id="registerTab" class="py-2 px-4 font-medium text-gray-400">昵称注册</button>
+      </div>
+      <!-- 手机登录表单 -->
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-sm mb-1">手机号</label>
+          <input type="tel" placeholder="请输入手机号" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-[var(--color-primary)]" required />
+        </div>
+        <div>
+          <label class="block text-sm mb-1">密码</label>
+          <input type="password" placeholder="请输入密码" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-[var(--color-primary)]" required />
+        </div>
+        <button type="submit" class="w-full bg-[var(--color-primary)] hover:bg-blue-700 py-2 rounded font-medium">登录</button>
+      </form>
+      <!-- 昵称注册表单（默认隐藏） -->
+      <form id="registerForm" class="space-y-4 hidden">
+        <div>
+          <label class="block text-sm mb-1">昵称</label>
+          <input type="text" placeholder="请输入昵称" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-[var(--color-primary)]" required />
+        </div>
+        <div>
+          <label class="block text-sm mb-1">密码</label>
+          <input type="password" placeholder="请输入密码" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-[var(--color-primary)]" required />
+        </div>
+        <div>
+          <label class="block text-sm mb-1">确认密码</label>
+          <input type="password" placeholder="请再次输入密码" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-[var(--color-primary)]" required />
+        </div>
+        <button type="submit" class="w-full bg-[var(--color-primary)] hover:bg-blue-700 py-2 rounded font-medium">注册</button>
+      </form>
+      <button id="closeAuth" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+        <i class="fas fa-times text-xl">>
+  </i    </button>
+    </div>
+  </div>
+
+  <!-- 充值模态框 -->
+  <div id="rechargeModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+      <h3 class="text-lg font-semibold mb-4">充值（1元=10金币）</h3>
+      <div class="space-y-3 mb-4">
+        <button class="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded" data-amount="10">10元（100金币）</button>
+        <button class="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded" data-amount="50">50元（500金币）</button>
+        <button class="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded" data-amount="100">100元（1000金币）</button>
+      </div>
+      <div class="flex justify-center space-x-4 mb-4">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=wxpay://" alt="微信支付" class="w-24 h-24" />
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=alipay://" alt="支付宝支付" class="w-24 h-24" />
+      </div>
+      <button id="closeRecharge" class="w-full bg-[var(--color-primary)] hover:bg-blue-700 py-2 rounded font-medium">关闭</button>
+    </div>
+  </div>
+
+  <!-- VIP开通模态框 -->
+  <div id="vipModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+      <h3 class="text-lg font-semibold mb-4">开通VIP</h3>
+      <div class="space-y-3 mb-4">
+        <button class="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded" data-type="month" data-coins="39">月VIP（39金币）</button>
+        <button class="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded" data-type="quarter" data-coins="99">季VIP（99金币）</button>
+        <button class="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded" data-type="year" data-coins="299">年VIP（299金币）</button>
+      </div>
+      <button id="closeVip" class="w-full bg-[var(--color-primary)] hover:bg-blue-700 py-2 rounded font-medium">关闭</button>
+    </div>
+  </div>
+
+  <!-- 广告购买模态框 -->
+  <div id="adModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+      <h3 class="text-lg font-semibold mb-4">购买广告位</h3>
+      <div class="space-y-3 mb-4">
+        <button class="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded" data-position="top">顶部横幅广告（¥XXX/天）</button>
+        <button class="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded" data-position="side">侧边小广告（¥XXX/天）</button>
+      </div>
+      <button id="closeAd" class="w-full bg-[var(--color-primary)] hover:bg-blue-700 py-2 rounded font-medium">关闭</button>
+    </div>
+  </div>
+
+  <!-- 管理员后台模态框 -->
+  <div id="adminModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-gray-800 rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
+      <h3 class="text-lg font-semibold mb-4">管理员后台</h3>
+      <div class="mb-4">
+        <h4 class="font-medium mb-2">用户列表</h4>
+        <table class="w-full text-sm border-collapse">
+          
+            
+              昵称
+              金币
+              VIP
+              操作
+            
+          
+          <tbody id="userTable">
+            <!-- 动态加载用户 -->
+          
+        
+      </div>
+      <div class="flex space-x-2">
+        <input type="text" id="addCoinInput" placeholder="输入金币数" class="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2" />
+        <button id="addCoinBtn" class="bg-green-600 hover:bg-green-700 px-3 py-2 rounded">加币</button>
+        <input type="text" id="banUserInput" placeholder="输入昵称禁言" class="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2" />
+        <button id="banUserBtn" class="bg-red-600 hover:bg-red-700 px-3 py-2 rounded">禁言</button>
+      </div>
+      <button id="closeAdmin" class="mt-4 w-full bg-[var(--color-primary)] hover:bg-blue-700 py-2 rounded font-medium">关闭</button>
+    </div>
+  </div>
+
+  <script>
+    // ============== 数据存储（模拟数据库，实际需后端+MySQL） ==============
+    let users = JSON.parse(localStorage.getItem('textile_users')) || [];
+    let currentUser = JSON.parse(localStorage.getItem('current_user')) || null;
+    let chatMessages = JSON.parse(localStorage.getItem('chat_messages')) || [
+      { role: 'system', content: '欢迎来到纺织通万人销售群！这里有棉纱、坯布、面料、工厂资源！' }
+    ];
+    let onlineUsers = JSON.parse(localStorage.getItem('online_users')) || [];
+    let signDays = JSON.parse(localStorage.getItem('sign_days')) || 0;
+    let lastSignDate = localStorage.getItem('last_sign_date') || '';
+
+    // 防违规词库（可扩展）
+    const forbiddenWords = ['色情', '反动', '赌博', '毒品', '诈骗'];
+
+    // ============== DOM 元素 ==============
+    const authModal = document.getElementById('authModal');
+    const loginTab = document.getElementById('loginTab');
+    const registerTab = document.getElementById('registerTab');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const closeAuth = document.getElementById('closeAuth');
+    const rechargeModal = document.getElementById('rechargeModal');
+    const rechargeBtn = document.getElementById('rechargeBtn');
+    const closeRecharge = document.getElementById('closeRecharge');
+    const vipModal = document.getElementById('vipModal');
+    const vipBtn = document.getElementById('vipBtn');
+    const closeVip = document.getElementById('closeVip');
+    const adModal = document.getElementById('adModal');
+    const adBuyBtn = document.getElementById('adBuyBtn');
+    const closeAd = document.getElementById('closeAd');
+    const adminBtn = document.getElementById('adminBtn');
+    const adminModal = document.getElementById('adminModal');
+    const closeAdmin = document.getElementById('closeAdmin');
+    const userTable = document.getElementById('userTable');
+    const addCoinInput = document.getElementById('addCoinInput');
+    const addCoinBtn = document.getElementById('addCoinBtn');
+    const banUserInput = document.getElementById('banUserInput');
+    const banUserBtn = document.getElementById('banUserBtn');
+    const onlineUsersEl = document.getElementById('onlineUsers');
+    const chatMessagesEl = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const sendMessage = document.getElementById('sendMessage');
+    const hornInput = document.getElementById('hornInput');
+    const sendHorn = document.getElementById('sendHorn');
+    const coinCountEl = document.getElementById('coinCount');
+    const signDaysEl = document.getElementById('signDays');
+    const signBtn = document.getElementById('signBtn');
+    const adminWechat = document.getElementById('adminWechat');
+
+    // ============== 初始化页面 ==============
+    function initPage() {
+      updateOnlineUsers();
+      renderChatMessages();
+      updateCoinAndSign();
+      if (currentUser) {
+        document.getElementById('adminBtn').classList.remove('hidden');
+        document.body.classList.add('logged-in');
+      } else {
+        document.body.classList.remove('logged-in');
+        authModal.classList.remove('hidden');
+      }
+      adminWechat.textContent = 'ZZ18962500118'; // 微信收款号
+    }
+
+    // ============== 登录/注册逻辑 ==============
+    loginTab.addEventListener('click', () => {
+      loginTab.classList.add('border-b-2', 'border-[var(--color-primary)]');
+      loginTab.classList.remove('text-gray-400');
+      registerTab.classList.remove('border-b-2', 'border-[var(--color-primary)]');
+      registerTab.classList.add('text-gray-400');
+      loginForm.classList.remove('hidden');
+      registerForm.classList.add('hidden');
+    });
+
+    registerTab.addEventListener('click', () => {
+      registerTab.classList.add('border-b-2', 'border-[var(--color-primary)]');
+      registerTab.classList.remove('text-gray-400');
+      loginTab.classList.remove('border-b-2', 'border-[var(--color-primary)]');
+      loginTab.classList.add('text-gray-400');
+      registerForm.classList.remove('hidden');
+      loginForm.classList.add('hidden');
+    });
+
+    closeAuth.addEventListener('click', () => {
+      authModal.classList.add('hidden');
+    });
+
+    // 登录表单提交
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const phone = loginForm.querySelector('input[type="tel"]').value.trim();
+      const password = loginForm.querySelector('input[type="password"]').value.trim();
+      const user = users.find(u => u.phone === phone && u.password === password);
+      if (user) {
+        currentUser = user;
+        localStorage.setItem('current_user', JSON.stringify(currentUser));
+        authModal.classList.add('hidden');
+        updateOnlineUsers(); // 加入在线用户
+        updateCoinAndSign();
+        document.getElementById('adminBtn').classList.remove('hidden');
+        alert('登录成功！');
+      } else {
+        alert('账号或密码错误！');
+      }
+    });
+
+    // 注册表单提交
+    registerForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nickname = registerForm.querySelector('input[type="text"]').value.trim();
+      const password = registerForm.querySelectorAll('input[type="password"]')[0].value.trim();
+      const confirmPwd = registerForm.querySelectorAll('input[type="password"]')[1].value.trim();
+      if (password !== confirmPwd) {
+        alert('两次密码不一致！');
+        return;
+      }
+      if (users.some(u => u.nickname === nickname)) {
+        alert('昵称已存在！');
+        return;
+      }
+      const newUser = {
+        id: Date.now(),
+        nickname,
+        password,
+        phone: '', // 昵称注册无手机号
+        coins: 10, // 新人送10金币
+        vip: false,
+        vipType: '',
+        isBanned: false,
+        banTime: 0,
+        signDays: 0,
+        lastSignDate: ''
+      };
+      users.push(newUser);
+      localStorage.setItem('textile_users', JSON.stringify(users));
+      currentUser = newUser;
+      localStorage.setItem('current_user', JSON.stringify(currentUser));
+      authModal.classList.add('hidden');
+      updateOnlineUsers(); // 加入在线用户
+      updateCoinAndSign();
+      document.getElementById('adminBtn').classList.remove('hidden');
+      alert('注册成功！获得10金币奖励~');
+    });
+
+    // ============== 充值逻辑（模拟微信/支付宝收款） ==============
+    rechargeBtn.addEventListener('click', () => {
+      rechargeModal.classList.remove('hidden');
+    });
+
+    closeRecharge.addEventListener('click', () => {
+      rechargeModal.classList.add('hidden');
+    });
+
+    // 充值金额按钮
+    document.querySelectorAll('#rechargeModal button[data-amount]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const amount = parseInt(btn.dataset.amount);
+        const coins = amount * 10; // 1元=10金币
+        if (currentUser) {
+          currentUser.coins += coins;
+          localStorage.setItem('textile_users', JSON.stringify(users));
+          localStorage.setItem('current_user', JSON.stringify(currentUser));
+          updateCoinAndSign();
+          alert(`充值成功！获得${coins}金币（请通过微信/支付宝扫码支付${amount}元）`);
+          rechargeModal.classList.add('hidden');
+        } else {
+          alert('请先登录！');
+        }
+      });
+    });
+
+    // ============== VIP开通逻辑 ==============
+    vipBtn.addEventListener('click', () => {
+      if (!currentUser) {
+        alert('请先登录！');
+        return;
+      }
+      if (currentUser.vip) {
+        alert('您已经是VIP了！');
+        return;
+      }
+      vipModal.classList.remove('hidden');
+    });
+
+    closeVip.addEventListener('click', () => {
+      vipModal.classList.add('hidden');
+    });
+
+    // VIP类型按钮
+    document.querySelectorAll('#vipModal button[data-type]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const coins = parseInt(btn.dataset.coins);
+        const vipType = btn.dataset.type;
+        if (currentUser.coins < coins) {
+          alert('金币不足！');
+          return;
+        }
+        currentUser.coins -= coins;
+        currentUser.vip = true;
+        currentUser.vipType = vipType;
+        localStorage.setItem('textile_users', JSON.stringify(users));
+        localStorage.setItem('current_user', JSON.stringify(currentUser));
+        updateCoinAndSign();
+        alert(`VIP开通成功！有效期：${getVipExpire(vipType)}`);
+        vipModal.classList.add('hidden');
+      });
+    });
+
+    // 计算VIP有效期（示例：月VIP30天，季90天，年365天）
+    function getVipExpire(type) {
+      const now = new Date();
+      let days = 0;
+      if (type === 'month') days = 30;
+      else if (type === 'quarter') days = 90;
+      else if (type === 'year') days = 365;
+      const expire = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+      return expire.toLocaleDateString();
+    }
+
+    // ============== 广告购买逻辑 ==============
+    adBuyBtn.addEventListener('click', () => {
+      adModal.classList.remove('hidden');
+    });
+
+    closeAd.addEventListener('click', () => {
+      adModal.classList.add('hidden');
+    });
+
+    // 广告位按钮
+    document.querySelectorAll('#adModal button[data-position]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const position = btn.dataset.position;
+        alert(`广告位购买成功！位置：${position === 'top' ? '顶部横幅' : '侧边小广告'}（请联系站长配置广告内容）`);
+        adModal.classList.add('hidden');
+      });
+    });
+
+    // ============== 管理员后台逻辑 ==============
+    adminBtn.addEventListener('click', () => {
+      adminModal.classList.remove('hidden');
+      renderUserTable();
+    });
+
+    closeAdmin.addEventListener('click', () => {
+      adminModal.classList.add('hidden');
+    });
+
+    // 渲染用户列表
+    function renderUserTable() {
+      userTable.innerHTML = '';
+      users.forEach(user => {
+        const row = document.createElement('tr');
+        row.className = 'border-t border-gray-700';
+        row.innerHTML = `
+          ${user.nickname}
+          ${user.coins}
+          ${user.vip ? user.vipType + ' VIP' : '普通用户'}
+          
+            <button class="bg-green-600 hover:bg-green-700 px-2 py-1 rounded text-xs mr-1" data-id="${user.id}" data-action="addCoin">加币</button>
+            <button class="bg-red-600 hover:bg-red-700 px-2 py-1 rounded text-xs" data-id="${user.id}" data-action="ban">禁言</button>
+          
+        `;
+        userTable.appendChild(row);
+      });
+      // 绑定加币/禁言按钮事件
+      document.querySelectorAll('#userTable button[data-action]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const userId = parseInt(btn.dataset.id);
+          const action = btn.dataset.action;
+          const user = users.find(u => u.id === userId);
+          if (action === 'addCoin') {
+            const coins = parseInt(prompt('请输入要添加的金币数：'));
+            if (!isNaN(coins) && coins > 0) {
+              user.coins += coins;
+              localStorage.setItem('textile_users', JSON.stringify(users));
+              renderUserTable();
+              updateCoinAndSign();
+              alert('加币成功！');
+            }
+          } else if (action === 'ban') {
+            user.isBanned = true;
+            user.banTime = Date.now();
+            localStorage.setItem('textile_users', JSON.stringify(users));
+            renderUserTable();
+            alert('禁言成功！');
+          }
+        });
+      });
+    }
+
+    // 手动加币（单独按钮）
+    addCoinBtn.addEventListener('click', () => {
+      const coins = parseInt(addCoinInput.value.trim());
+      if (isNaN(coins) || coins <= 0) {
+        alert('请输入有效的金币数！');
+        return;
+      }
+      if (currentUser) {
+        currentUser.coins += coins;
+        localStorage.setItem('textile_users', JSON.stringify(users));
+        localStorage.setItem('current_user', JSON.stringify(currentUser));
+        updateCoinAndSign();
+        addCoinInput.value = '';
+        alert('加币成功！');
+      } else {
+        alert('请先登录！');
+      }
+    });
+
+    // 手动禁言（单独按钮）
+    banUserBtn.addEventListener('click', () => {
+      const nickname = banUserInput.value.trim();
+      const user = users.find(u => u.nickname === nickname);
+      if (!user) {
+        alert('用户不存在！');
+        return;
+      }
+      user.isBanned = true;
+      user.banTime = Date.now();
+      localStorage.setItem('textile_users', JSON.stringify(users));
+      renderUserTable();
+      banUserInput.value = '';
+      alert('禁言成功！');
+    });
+
+    // ============== 在线用户逻辑 ==============
+    function updateOnlineUsers() {
+      if (currentUser) {
+        // 模拟在线（实际需WebSocket实时同步）
+        if (!onlineUsers.includes(currentUser.nickname)) {
+          onlineUsers.push(currentUser.nickname);
+          localStorage.setItem('online_users', JSON.stringify(onlineUsers));
+        }
+      }
+      onlineUsersEl.innerHTML = '';
+      onlineUsers.forEach(user => {
+        const li = document.createElement('li');
+        li.className = 'flex items-center space-x-2 p-2 rounded hover:bg-gray-700 cursor-pointer';
+        li.innerHTML = `
+          <div class="w-8 h-8 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-white text-sm">纺</div>
+          <span>${user}</span>
+        `;
+        onlineUsersEl.appendChild(li);
+      });
+    }
+
+    // ============== 聊天消息逻辑 ==============
+    function renderChatMessages() {
+      chatMessagesEl.innerHTML = '';
+      chatMessages.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = 'flex items-start space-x-2';
+        if (msg.role === 'system') {
+          div.innerHTML = `
+            <span class="text-xs bg-gray-700 px-2 py-1 rounded">系统</span>
+            <p class="text-sm">${msg.content}
+          `;
+        } else {
+          const isCurrent = msg.sender === currentUser?.nickname;
+          const isVip = users.find(u => u.nickname === msg.sender)?.vip;
+          div.className = isCurrent ? 'justify-end' : 'justify-start';
+          div.innerHTML = `
+            ${!isCurrent ? `
+              <div class="w-8 h-8 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-white text-sm">
+                ${msg.sender.charAt(0)}
+              </div>
+            ` : ''}
+            <div class="${isCurrent ? 'bg-[var(--color-primary)]' : 'bg-gray-700'} rounded-lg p-2 max-w-[70%]">
+              <p class="text-xs font-medium ${isVip ? 'text-yellow-400' : ''}">${msg.sender}${isVip ? ' [VIP]' : ''}
+              <p class="text-sm">${msg.content}
+            </div>
+            ${isCurrent ? `
+              <div class="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-white text-sm">
+                ${msg.sender.charAt(0)}
+              </div>
+            ` : ''}
+          `;
+        }
+        chatMessagesEl.appendChild(div);
+      });
+      // 滚动到底部
+      chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+    }
+
+    // 发送普通消息
+    sendMessage.addEventListener('click', () => {
+      const content = messageInput.value.trim();
+      if (!content) return;
+      if (!currentUser) {
+        alert('请先登录！');
+        return;
+      }
+      if (currentUser.isBanned) {
+        const banLeft = Math.ceil((currentUser.banTime + 24 * 60 * 60 * 1000 - Date.now()) / (60 * 60 * 1000));
+        alert(`您已被禁言，剩余${banLeft}小时`);
+        return;
+      }
+      // 防违规检测
+      const hasForbidden = forbiddenWords.some(word => content.includes(word));
+      if (hasForbidden) {
+        alert('消息包含违规内容，请修改后发送！');
+        return;
+      }
+      // 发送消息
+      chatMessages.push({
+        role: 'user',
+        sender: currentUser.nickname,
+        content,
+        time: new Date().toLocaleTimeString()
+      });
+      localStorage.setItem('chat_messages', JSON.stringify(chatMessages));
+      messageInput.value = '';
+      renderChatMessages();
+      // 模拟AI回复（实际需调用AI接口，如OpenAI）
+      setTimeout(() => {
+        chatMessages.push({
+          role: 'ai',
+          sender: '纺织通AI助手',
+          content: `您好，我是纺织通AI助手，您咨询的内容可以帮您匹配棉纱/坯布/面料资源，是否需要推荐供应商？`,
+          time: new Date().toLocaleTimeString()
+        });
+        localStorage.setItem('chat_messages', JSON.stringify(chatMessages));
+        renderChatMessages();
+      }, 1000);
+    });
+
+    // 发送喇叭（顶掉上一条）
+    sendHorn.addEventListener('click', () => {
+      const content = hornInput.value.trim();
+      if (!content) return;
+      if (!currentUser) {
+        alert('请先登录！');
+        return;
+      }
+      if (currentUser.coins < 1) {
+        alert('金币不足，无法发送喇叭！');
+        return;
+      }
+      if (currentUser.isBanned) {
+        const banLeft = Math.ceil((currentUser.banTime + 24 * 60 * 60 * 1000 - Date.now()) / (60 * 60 * 1000));
+        alert(`您已被禁言，剩余${banLeft}小时`);
+        return;
+      }
+      // 防违规检测
+      const hasForbidden = forbiddenWords.some(word => content.includes(word));
+      if (hasForbidden) {
+        alert('消息包含违规内容，请修改后发送！');
+        return;
+      }
+      // 扣除金币
+      currentUser.coins -= 1;
+      localStorage.setItem('textile_users', JSON.stringify(users));
+      localStorage.setItem('current_user', JSON.stringify(currentUser));
+      updateCoinAndSign();
+      // 发送喇叭（顶掉上一条喇叭）
+      const hornMsg = {
+        role: 'horn',
+        sender: currentUser.nickname,
+        content,
+        time: new Date().toLocaleTimeString()
+      };
+      // 移除之前的喇叭（如果有）
+      chatMessages = chatMessages.filter(msg => msg.role !== 'horn');
+      chatMessages.push(hornMsg);
+      localStorage.setItem('chat_messages', JSON.stringify(chatMessages));
+      hornInput.value = '';
+      renderChatMessages();
+    });
+
+    // ============== 金币与签到逻辑 ==============
+    function updateCoinAndSign() {
+      if (currentUser) {
+        coinCountEl.textContent = currentUser.coins;
+        signDaysEl.textContent = currentUser.signDays;
+        // 检查今日是否已签到
+        const today = new Date().toDateString();
+        if (currentUser.lastSignDate !== today) {
+          signBtn.disabled = false;
+          signBtn.textContent = '签到送1金币';
+        } else {
+          signBtn.disabled = true;
+          signBtn.textContent = '今日已签到';
+        }
+      } else {
+        coinCountEl.textContent = '0';
+        signDaysEl.textContent = '0';
+        signBtn.disabled = true;
+        signBtn.textContent = '请先登录';
+      }
+    }
+
+    // 每日签到
+    signBtn.addEventListener('click', () => {
+      if (!currentUser) {
+        alert('请先登录！');
+        return;
+      }
+      const today = new Date().toDateString();
+      if (currentUser.lastSignDate === today) {
+        alert('今日已签到！');
+        return;
+      }
+      currentUser.coins += 1;
+      currentUser.signDays += 1;
+      currentUser.lastSignDate = today;
+      localStorage.setItem('textile_users', JSON.stringify(users));
+      localStorage.setItem('current_user', JSON.stringify(currentUser));
+      updateCoinAndSign();
+      alert('签到成功！获得1金币');
+    });
+
+    // ============== AI聊天模拟（实际需对接AI API） ==============
+    // 可在发送消息后触发，示例已在sendMessage中添加
+
+    // ============== 初始化 ==============
+    initPage();
+  </script>
+</body>
+</html>
